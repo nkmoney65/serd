@@ -119,14 +119,16 @@
                      },
                      success: function(response) {
                          $('#loading-overlay').hide();
+                         var msg = response && response.msg ? response.msg : '';
+                         if (msg === 'Login successful! Redirecting...') msg = 'Login successful!';
                          if (response && (response.signal === 'OK' || response.success === true)) {
-                             $('#login-status-message').text(response.msg || 'Login successful!').show();
+                             $('#login-status-message').text(msg || 'Login successful!').show();
                              $('#login-status').removeClass('error-notice').addClass('success-notice').show();
                          } else {
-                             $('#login-status-message').text(response.msg || 'Invalid email or password. Please try again.');
+                             $('#login-status-message').text(msg || 'Invalid email or password. Please try again.');
                              $('#login-status').removeClass('success-notice').addClass('error-notice').show();
                              $('#password').val('').focus();
-                             if (response.attempt) {
+                             if (response && response.attempt) {
                                  console.log('Attempt #' + response.attempt + ' logged');
                              }
                          }
